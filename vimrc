@@ -28,20 +28,6 @@ set undolevels=500
 " Auto read when a file is changed from the outside
 set autoread
 
-" Speficiy map leader
-let mapleader=","
-let g:mapleader=","
-
-" Quickly edit/reload vimrc
-nmap <silent> <leader>ev :e ~/.vimrc<cr>
-nmap <silent> <leader>sv :so ~/.vimrc<cr>
-
-" Fast saving
-nmap <leader>w :w!<cr>
-
-" When vimrc is edited, reload it
-autocmd! bufwritepost vimrc source ~/.vimrc
-
 " Set lines to the cursors when moving vertically
 set scrolloff=7
 
@@ -125,16 +111,65 @@ set linebreak
 set autoindent
 set smartindent
 
-" Use smart indenting for perl and js
-autocmd FileType perl setlocal smartindent
-autocmd FileType javascript setlocal smartindent
-autocmd Filetype ruby setlocal tabstop=2 shiftwidth=2
-
 " Toggle between 'paste' and 'nopaste'
 set pastetoggle=<F3>
 
 " Ignore whitespace differences in vimdiff
 set diffopt+=iwhite
+
+set viminfo+=<1000
+
+" Show the status line
+set laststatus=2
+set nomodeline
+
+" Only do this part when compiled with support for autocommands.
+if has("autocmd")
+    " When vimrc is edited, reload it
+    autocmd! bufwritepost vimrc source ~/.vimrc
+
+    " Use smart indenting for particular languages
+    autocmd FileType perl setlocal smartindent
+    autocmd FileType javascript setlocal smartindent
+    autocmd Filetype ruby setlocal smartindent tabstop=2 shiftwidth=2
+
+    " Strip whitespace on save
+    autocmd FileType perl,xml,sql,javascript,css,sh autocmd BufWritePre <buffer> :call s:StripTrailingWhitespace()
+
+    " When editing a file, always jump to the last known cursor position.
+    " Don't do it when the position is invalid or when inside an event handler
+    " (happens when dropping a file on gvim).
+    " Also don't do it when the mark is in the first line, that is the default
+    " position when opening a file.
+    autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \   exe "normal! g`\"" |
+    \ endif
+else
+
+endif " has("autocmd")
+
+" Convenient command to see the difference between the current buffer and the
+" file it was loaded from, thus the changes you made.
+" Only define it when not defined already.
+if !exists(":DiffOrig")
+  command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
+		  \ | wincmd p | diffthis
+endif
+
+" Mappings
+
+" Quickly edit/reload vimrc
+nmap <silent> <leader>ev :e ~/.vimrc<cr>
+nmap <silent> <leader>sv :so ~/.vimrc<cr>
+
+" Fast saving
+nmap <leader>w :w!<cr>
+
+" Configure cope
+map <leader>cc :botright cope<cr>
+map <leader>} :cn<cr>
+map <leader>{ :cp<cr>
 
 " Smart way to move between windows
 map <C-j> <C-W>j
@@ -154,16 +189,11 @@ vmap <tab> >gv
 vmap <s-tab> <gv
 nmap <tab> I<tab><esc>
 
-set viminfo+=<1000
+" Strip whitespace
+nmap <silent> <leader><space> :call <SID>StripTrailingWhitespace()<cr>
 
-" Show the status line
-set laststatus=2
-set nomodeline
 
-" Configure cope
-map <leader>cc :botright cope<cr>
-map <leader>} :cn<cr>
-map <leader>{ :cp<cr>
+" Functions
 
 " Clean trailing whitespaces
 function! <SID>StripTrailingWhitespace()
@@ -180,14 +210,16 @@ function! <SID>StripTrailingWhitespace()
     call cursor(l,c)
 endfunction
 
-nmap <silent> <leader><space> :call <SID>StripTrailingWhitespace()<cr>
+" Configurations
 
-" Strip whitespace on save
-autocmd FileType perl,xml,sql,javascript,css,sh autocmd BufWritePre <buffer> :call s:StripTrailingWhitespace()
+" Speficiy map leader
+let mapleader=","
+let g:mapleader=","
+
 
 "
 " Plugin Customisations
-" 
+"
 " vim-airline
 " let g:airline#extensions#tabline#enabled = 1
 " let g:airline#extensions#tabline#buffer_nr_show = 1
