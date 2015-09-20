@@ -3,7 +3,7 @@
 " GENERAL
 "------------------------------------------------------------------------------
 
-" Vim compatible instead of vi. 
+" Vim compatible instead of vi.
 " Must be the first thing becuase other options are changed as a side effect
 set nocompatible
 
@@ -25,7 +25,14 @@ let mapleader=","
 let g:mapleader=","
 
 " Fast saving
-nmap <leader>w :w!<cr>
+nnoremap <leader>w :w!<cr>
+
+" Switch to the directory of the open buffer
+nnoremap <leader>cd :cd %:p:h<cr>:pwd<cr>
+
+" Quickly edit/reload vimrc
+nnoremap <silent> <leader>ev :e ~/.vimrc<cr>
+nnoremap <silent> <leader>sv :so ~/.vimrc<cr>
 
 " How many lines VIM should remember
 set history=100
@@ -56,9 +63,6 @@ set title
 " scrolling
 set scrolloff=7
 
-" Show line numbers
-set number
-
 " Display incomplete commands
 set showcmd
 
@@ -82,6 +86,9 @@ set cmdheight=2
 
 " When splitting, put new window on the right (default is on the left)
 set splitright
+
+" When splitting, put new window on the bottom (default is on the top)
+set splitbelow
 
 " Show the status line
 set laststatus=2
@@ -118,7 +125,7 @@ set diffopt+=iwhite
 " Only define it when not defined already.
 if !exists(":DiffOrig")
   command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
-		  \ | wincmd p | diffthis
+          \ | wincmd p | diffthis
 endif
 
 " Use UTF8 as standard encoding
@@ -153,7 +160,7 @@ nnoremap <leader>/ :nohlsearch<CR>
 " SPACES & TABS
 "------------------------------------------------------------------------------
 
-" Number of spaces to use for each step of (auto)indent. 
+" Number of spaces to use for each step of (auto)indent.
 set shiftwidth=4
 
 " 1 tab equals 4 spaces
@@ -171,7 +178,7 @@ set smarttab
 " Copy indent from current line when starting a new line
 set autoindent
 
-" Do smart autoindenting when starting a new line. 
+" Do smart autoindenting when starting a new line.
 set smartindent
 
 " Configure backspace to behave normally
@@ -184,6 +191,14 @@ set linebreak
 " beginning or end of lines. ( < > are the cursor keys used in normal and
 " visual mode and [ ] are the cursor keys in insert mode).
 set whichwrap+=<,>,h,l,[,]
+
+" Enable visual selection and indenting
+vnoremap <tab> >gv
+vnoremap <s-tab> <gv
+nnoremap <tab> I<tab><esc>
+
+" Strip whitespace
+nnoremap <silent> <leader><space> :call <SID>StripTrailingWhitespace()<cr>
 
 "------------------------------------------------------------------------------
 " SAVING & BACKUPS
@@ -226,6 +241,10 @@ if has("autocmd")
         " Strip whitespace on save
         autocmd FileType perl,xml,sql,javascript,css,sh autocmd BufWritePre <buffer> :call s:StripTrailingWhitespace()
 
+        " Git commit messages - set width and make cursor start at the top
+        " instead of last remembered position of the file
+        autocmd FileType gitcommit setlocal textwidth=72
+        autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0])
     augroup END
 
     augroup config_read
@@ -251,40 +270,28 @@ endif " has("autocmd")
 " Highlight last inserted text
 nnoremap gV `[v`]
 
-" Quickly edit/reload vimrc
-nmap <silent> <leader>ev :e ~/.vimrc<cr>
-nmap <silent> <leader>sv :so ~/.vimrc<cr>
-
 " Configure cope
-map <leader>cc :botright cope<cr>
-map <leader>c] :cn<cr>
-map <leader>c[ :cp<cr>
+nnoremap <leader>cc :botright cope<cr>
+nnoremap <leader>c] :cn<cr>
+nnoremap <leader>c[ :cp<cr>
 
 " Move between buffers
-map <leader>b] :bn<cr>
-map <leader>b[ :bp<cr>
+nnoremap <leader>b] :bn<cr>
+nnoremap <leader>b[ :bp<cr>
 
 " Smart way to move between windows
-map <C-j> <C-W>j
-map <C-k> <C-W>k
-map <C-h> <C-W>h
-map <C-l> <C-W>l
+nnoremap <C-J> <C-W>j
+nnoremap <C-K> <C-W>k
+nnoremap <C-H> <C-W>h
+nnoremap <C-L> <C-W>l
+nnoremap <C-W> <C-W>w
 
 " Move between windows and maximize
-map <C-J> <C-W>j<C-W>_
-map <C-K> <C-W>k<C-W>_
+nnoremap <C-N> <C-W>j<C-W>_
+nnoremap <C-M> <C-W>k<C-W>_
 
-" Switch to the directory of the open buffer
-map <leader>cd :cd %:p:h<cr>:pwd<cr>
-
-" Enable visual selection and indenting
-vmap <tab> >gv
-vmap <s-tab> <gv
-nmap <tab> I<tab><esc>
-
-" Strip whitespace
-nmap <silent> <leader><space> :call <SID>StripTrailingWhitespace()<cr>
-
+" When in insert mode, make jk go to normal mode
+inoremap jk <esc>
 
 "------------------------------------------------------------------------------
 " FUNCTIONS
