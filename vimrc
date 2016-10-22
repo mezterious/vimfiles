@@ -181,6 +181,9 @@ set autoindent
 " Do smart autoindenting when starting a new line.
 set smartindent
 
+" Smart indenting has some odd notions about comments, this corrects that
+inoremap # X#
+
 " Configure backspace to behave normally
 set backspace=eol,start,indent
 
@@ -239,12 +242,16 @@ if has("autocmd")
         autocmd FileType ruby setlocal shiftwidth=2 tabstop=2 softtabstop=2
 
         " Strip whitespace on save
-        autocmd FileType perl,xml,sql,javascript,css,sh autocmd BufWritePre <buffer> :call s:StripTrailingWhitespace()
+        autocmd FileType perl,xml,sql,javascript,css,sh,ruby,yml autocmd BufWritePre <buffer> :call s:StripTrailingWhitespace()
 
         " Git commit messages - set width and make cursor start at the top
         " instead of last remembered position of the file
         autocmd FileType gitcommit setlocal textwidth=72
         autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0])
+
+        " Set up the default compiler for each filetype 
+        autocmd FileType perl compiler perl
+        autocmd FileType javascript compiler jshint
     augroup END
 
     augroup config_read
